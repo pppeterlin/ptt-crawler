@@ -1,0 +1,5 @@
+.DS_Store
+google-api-credential.json
+client_secret_gmail.json
+test.py
+__pycache__
