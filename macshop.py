@@ -184,5 +184,5 @@ if __name__ == '__main__':
     # # print(content)
     # title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
     
-    mes = gmail.CreateMessage(sender_email, sender_email, data)
+    mes = gmail.CreateMessage(sender_email, sender_email, data, target_good)
     gmail.SendMessage(service, sender_email, mes)

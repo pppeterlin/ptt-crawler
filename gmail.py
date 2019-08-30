@@ -65,13 +65,14 @@ def SendMessage(service, user_id, message):
     print('An error occurred: %s' % error)
 
 
-def CreateMessage(sender, to, data):
+def CreateMessage(sender, to, data, target_good):
   """Create a message for an email.
 
   Args:
     sender: Email address of the sender.
     to: Email address of the receiver.
     data: The articles of tracing goods.
+    target_good: The good we want to trace.
 
   Returns:
     An object containing a base64url encoded email object.
