@@ -8,7 +8,7 @@
 # PTT Crawl and Parse Requirements
 import requests
 from bs4 import BeautifulSoup
-import ast
+import ast, time
 
 # Gmail API Requirements
 import base64
@@ -134,7 +134,7 @@ def goodTrace(target, articles):
 
 
 if __name__ == '__main__':
-
+    s_time = time.time()
     site = 'https://www.ptt.cc'
     board = 'bbs/MacShop'
     page = 'index.html'
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     target_good = 'MacBook'
     
     data = []
-    for i in range(3):
+    for i in range(5):
         # crawl list
         articles = goodTrace(target_good, crawl_list(url))
     
@@ -159,6 +159,8 @@ if __name__ == '__main__':
         url = ('/').join([site, last_page])
         print(url)
     
+    e_time = time.time()
+    print('程序時間共{}秒'.format(e_time - s_time))
     # print(data) 
 
     # Send Gmail
