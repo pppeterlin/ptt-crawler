@@ -26,6 +26,10 @@ from oauth2client.file import Storage
 from oauth2client import file, client, tools
 import gmail
 
+# Multipleprocessing
+from multiprocessing import Pool
+import queue
+import time
 
 def get_lastPage(url):
     # url = 'https://www.ptt.cc//bbs/MacShop/index15527.html'
@@ -132,15 +136,15 @@ def goodTrace(target, articles):
     
     return target_list
 
-
 if __name__ == '__main__':
-
+    start_time = time.time()
     site = 'https://www.ptt.cc'
     board = 'bbs/MacShop'
     page = 'index.html'
     url = ('/').join([site, board, page])
     target_good = 'MacBook'
-    
+    p = Pool(4)
+
     data = []
     for i in range(3):
         # crawl list
@@ -148,17 +152,18 @@ if __name__ == '__main__':
     
         # parse content
         for a in articles:
-            # print(a['title'])
-            # print(a['url'])
-            html = requests.get(a['url']).text
-            content = parse_content(a['url'])
-            data.append({'url': a['url'], 'content': content})
+            data.append({'url': a['url'],
+                        'content': p.apply_async(parse_content, args=(a['url'],)).get()})
+            # html = requests.get(a['url']).text
+            # content = parse_content(a['url'])
     
         # get last page
         last_page = get_lastPage(url)
         url = ('/').join([site, last_page])
         print(url)
     
+    end_time = time.time()
+    print('程序時間共{}秒'.format(end_time - start_time))
     # print(data) 
 
     # Send Gmail
