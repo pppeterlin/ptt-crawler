@@ -30,6 +30,7 @@ import gmail
 from multiprocessing import Pool
 import queue
 import time
+import threading
 
 
 def get_lastPage(url):
@@ -162,7 +163,6 @@ def goodTrace(target, articles):
         the list of urls of articles
 
     """
-    
     target_list = []
     f = open('product_dic')
     proDic = ast.literal_eval(f.read())
@@ -171,8 +171,20 @@ def goodTrace(target, articles):
         # print(i['content']['good_info']['[物品型號]'])
         if sum([k in a['title'] for k in proDic.get(target)]):
             target_list.append(a)
-    
+
     return target_list
+
+
+def main(u):
+    # crawl list
+    articles = goodTrace(target_good, crawl_list(u))
+
+    # parse content
+    for a in articles:
+        data.append({'url': a['url'],
+                    'content': p.apply_async(parse_content, args=(a['url'],)).get()})
+        # html = requests.get(a['url']).text
+        # content = parse_content(a['url'])
 
 
 if __name__ == '__main__':
@@ -185,49 +197,47 @@ if __name__ == '__main__':
     p = Pool(4)
 
     data = []
-    for i in range(5):
-        # crawl list
-        articles = goodTrace(target_good, crawl_list(url))
-    
-        # parse content
-        for a in articles:
-            data.append({'url': a['url'],
-                        'content': p.apply_async(parse_content, args=(a['url'],)).get()})
-            # html = requests.get(a['url']).text
-            # content = parse_content(a['url'])
-    
+    threads=[]
+
+    for i in range(10):
+        print(url)    
+        threads.append(threading.Thread(target=main, args=(url,)))
+        threads[i].start()
+
         # get last page
         last_page = get_lastPage(url)
         url = ('/').join([site, last_page])
-        print(url)
+        # print(url)
     
+    for t in threads:
+        t.join()
     end_time = time.time()
     print('程序時間共{}秒'.format(end_time - start_time))
-    # print(data) 
+    print(data) 
 
-    # Send Gmail
-    credentials = gmail.get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('gmail', 'v1', http=http)
+    # # Send Gmail
+    # credentials = gmail.get_credentials()
+    # http = credentials.authorize(httplib2.Http())
+    # service = discovery.build('gmail', 'v1', http=http)
     
-    user_profile = service.users().getProfile(userId='me').execute()
-    sender_email = user_profile['emailAddress']
-    print(sender_email)
+    # user_profile = service.users().getProfile(userId='me').execute()
+    # sender_email = user_profile['emailAddress']
+    # print(sender_email)
 
-    content = ''
-    for item in data:
-        meta = item['content']['meta']
-        good_info = item['content']['good_info']
+    # content = ''
+    # for item in data:
+    #     meta = item['content']['meta']
+    #     good_info = item['content']['good_info']
 
-        content += ('\n').join([meta['title'], '[物品規格]: '+good_info['[物品規格]'], '[交易地點]: '+good_info['[交易地點]'], '[交易方式]: '+good_info['[交易方式]'], '[交易價格]; '+good_info['[交易價格]'], item['url']])
-        content +='\n\n'
-        content += '------------------------------------------------------------\n'
-        content +='\n\n'
+    #     content += ('\n').join([meta['title'], '[物品規格]: '+good_info['[物品規格]'], '[交易地點]: '+good_info['[交易地點]'], '[交易方式]: '+good_info['[交易方式]'], '[交易價格]; '+good_info['[交易價格]'], item['url']])
+    #     content +='\n\n'
+    #     content += '------------------------------------------------------------\n'
+    #     content +='\n\n'
 
-    # print(content)
-    title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
+    # # print(content)
+    # title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
     
-    mes = gmail.CreateMessage(sender_email, sender_email, data, target_good)
-    if mes:
-        gmail.SendMessage(service, sender_email, mes)
+    # mes = gmail.CreateMessage(sender_email, sender_email, data, target_good)
+    # if mes:
+    #     gmail.SendMessage(service, sender_email, mes)
     
