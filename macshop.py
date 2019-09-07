@@ -215,29 +215,29 @@ if __name__ == '__main__':
     print('程序時間共{}秒'.format(end_time - start_time))
     print(data) 
 
-    # # Send Gmail
-    # credentials = gmail.get_credentials()
-    # http = credentials.authorize(httplib2.Http())
-    # service = discovery.build('gmail', 'v1', http=http)
+    # Send Gmail
+    credentials = gmail.get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('gmail', 'v1', http=http)
     
-    # user_profile = service.users().getProfile(userId='me').execute()
-    # sender_email = user_profile['emailAddress']
-    # print(sender_email)
+    user_profile = service.users().getProfile(userId='me').execute()
+    sender_email = user_profile['emailAddress']
+    print(sender_email)
 
-    # content = ''
-    # for item in data:
-    #     meta = item['content']['meta']
-    #     good_info = item['content']['good_info']
+    content = ''
+    for item in data:
+        meta = item['content']['meta']
+        good_info = item['content']['good_info']
 
-    #     content += ('\n').join([meta['title'], '[物品規格]: '+good_info['[物品規格]'], '[交易地點]: '+good_info['[交易地點]'], '[交易方式]: '+good_info['[交易方式]'], '[交易價格]; '+good_info['[交易價格]'], item['url']])
-    #     content +='\n\n'
-    #     content += '------------------------------------------------------------\n'
-    #     content +='\n\n'
+        content += ('\n').join([meta['title'], '[物品規格]: '+good_info['[物品規格]'], '[交易地點]: '+good_info['[交易地點]'], '[交易方式]: '+good_info['[交易方式]'], '[交易價格]; '+good_info['[交易價格]'], item['url']])
+        content +='\n\n'
+        content += '------------------------------------------------------------\n'
+        content +='\n\n'
 
-    # # print(content)
-    # title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
+    # print(content)
+    title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
     
-    # mes = gmail.CreateMessage(sender_email, sender_email, data, target_good)
-    # if mes:
-    #     gmail.SendMessage(service, sender_email, mes)
+    mes = gmail.CreateMessage(sender_email, sender_email, data, target_good)
+    if mes:
+        gmail.SendMessage(service, sender_email, mes)
     
