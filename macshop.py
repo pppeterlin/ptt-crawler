@@ -31,7 +31,17 @@ from multiprocessing import Pool
 import queue
 import time
 
+
 def get_lastPage(url):
+    """ Get the url of next page
+    
+    Parameters
+    ----------
+    url : str
+        the url of current page
+
+    """
+
     # url = 'https://www.ptt.cc//bbs/MacShop/index15527.html'
     html = requests.get(url).text
     soup = BeautifulSoup(html, 'html.parser')
@@ -42,11 +52,20 @@ def get_lastPage(url):
 
 
 def crawl_list(page):
+    """ Get the list of urls of current page
+    
+    Parameters
+    ----------
+    page : str
+        the url of current page
+
+    """
+
     html = requests.get(page).text
     soup = BeautifulSoup(html, 'html.parser')
 
     domain_prefix = 'https://www.ptt.cc'
-    skip = []
+    # skip = []
     result = soup.select('.title a')
 
     url_list = []
@@ -61,6 +80,14 @@ def crawl_list(page):
 
 
 def parse_content(article):
+    """ Parse the contets of a article.
+    
+    Parameters
+    ----------
+    article : str
+        the url of article
+
+    """
 
     def parse_meta(soup):
         metaline = soup.select('.article-metaline')
@@ -125,6 +152,17 @@ def parse_content(article):
 
 
 def goodTrace(target, articles):
+    """ Check if article contains the goods we are tracing.
+    
+    Parameters
+    ----------
+    target : str
+        the name of tracing goods.
+    articles: list
+        the list of urls of articles
+
+    """
+    
     target_list = []
     f = open('product_dic')
     proDic = ast.literal_eval(f.read())
@@ -136,6 +174,7 @@ def goodTrace(target, articles):
     
     return target_list
 
+
 if __name__ == '__main__':
     start_time = time.time()
     site = 'https://www.ptt.cc'
@@ -146,7 +185,7 @@ if __name__ == '__main__':
     p = Pool(4)
 
     data = []
-    for i in range(3):
+    for i in range(5):
         # crawl list
         articles = goodTrace(target_good, crawl_list(url))
     
@@ -175,18 +214,18 @@ if __name__ == '__main__':
     sender_email = user_profile['emailAddress']
     print(sender_email)
 
-    # content = ''
-    # for item in data:
-    #     meta = item['content']['meta']
-    #     good_info = item['content']['good_info']
+    content = ''
+    for item in data:
+        meta = item['content']['meta']
+        good_info = item['content']['good_info']
 
-    #     content += ('\n').join([meta['title'], '[物品規格]: '+good_info['[物品規格]'], '[交易地點]: '+good_info['[交易地點]'], '[交易方式]: '+good_info['[交易方式]'], '[交易價格]; '+good_info['[交易價格]'], item['url']])
-    #     content +='\n\n'
-    #     content += '------------------------------------------------------------\n'
-    #     content +='\n\n'
+        content += ('\n').join([meta['title'], '[物品規格]: '+good_info['[物品規格]'], '[交易地點]: '+good_info['[交易地點]'], '[交易方式]: '+good_info['[交易方式]'], '[交易價格]; '+good_info['[交易價格]'], item['url']])
+        content +='\n\n'
+        content += '------------------------------------------------------------\n'
+        content +='\n\n'
 
-    # # print(content)
-    # title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
+    # print(content)
+    title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
     
     mes = gmail.CreateMessage(sender_email, sender_email, data, target_good)
     if mes:
