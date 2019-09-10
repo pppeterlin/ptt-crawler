@@ -5,4 +5,6 @@ test.py
 __pycache__
 .vscode/
 crontab_log
-tmp/
+tmp1.py
+tmp2.py
+tmp3.py
