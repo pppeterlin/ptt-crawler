@@ -9,6 +9,7 @@
 import requests
 from bs4 import BeautifulSoup
 import ast
+from pymongo import MongoClient
 
 # Gmail API Requirements
 import base64
@@ -188,6 +189,11 @@ def main(u):
 
 
 if __name__ == '__main__':
+    conn = MongoClient('host.docker.internal:27017')
+    # conn = MongoClient()
+    collection = conn.local.macshop
+    print(collection.stats)
+
     start_time = time.time()
     site = 'https://www.ptt.cc'
     board = 'bbs/MacShop'
@@ -199,7 +205,7 @@ if __name__ == '__main__':
     data = []
     threads=[]
 
-    for i in range(10):
+    for i in range(5):
         print(url)    
         threads.append(threading.Thread(target=main, args=(url,)))
         threads[i].start()
@@ -213,7 +219,20 @@ if __name__ == '__main__':
         t.join()
     end_time = time.time()
     print('程序時間共{}秒'.format(end_time - start_time))
-    print(data) 
+
+    print(len(data))
+
+    # data = [i for i in data if collection.update({'url': i['url']}, i, upsert = True)['updatedExisting'] == 'True']
+    data_new = data[:]
+    for i in data:            
+        exitst = collection.update({'url': i['url']}, i, upsert = True)
+        # print('EX', exitst['updatedExisting'])
+        if (exitst['updatedExisting']==True):
+            data_new.remove(i)
+
+    print(len(data_new))
+    print(collection.find({}).count())
+    # print(data)  
 
     # Send Gmail
     credentials = gmail.get_credentials()
@@ -225,19 +244,25 @@ if __name__ == '__main__':
     print(sender_email)
 
     content = ''
-    for item in data:
-        meta = item['content']['meta']
-        good_info = item['content']['good_info']
+    if data_new:
+        for item in data_new:
+            meta = item['content']['meta']
+            good_info = item['content']['good_info']
 
-        content += ('\n').join([meta['title'], '[物品規格]: '+good_info['[物品規格]'], '[交易地點]: '+good_info['[交易地點]'], '[交易方式]: '+good_info['[交易方式]'], '[交易價格]; '+good_info['[交易價格]'], item['url']])
-        content +='\n\n'
-        content += '------------------------------------------------------------\n'
-        content +='\n\n'
+            content += ('\n').join([meta['title'], '[物品規格]: '+good_info['[物品規格]'], '[交易地點]: '+good_info['[交易地點]'], '[交易方式]: '+good_info['[交易方式]'], '[交易價格]; '+good_info['[交易價格]'], item['url']])
+            content +='\n\n'
+            content += '------------------------------------------------------------\n'
+            content +='\n\n'
 
-    # print(content)
-    title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
-    
-    mes = gmail.CreateMessage(sender_email, sender_email, data, target_good)
-    if mes:
-        gmail.SendMessage(service, sender_email, mes)
+        # print(content)
+        title = ('').join(['您追蹤的', target_good, '有', str(len(data)), '則新貼文！'])
+        
+        mes = gmail.CreateMessage(sender_email, sender_email, data, target_good)
+        if mes:
+            gmail.SendMessage(service, sender_email, mes)
+    else:
+        print('沒有新貼文～')
+
+
+
     

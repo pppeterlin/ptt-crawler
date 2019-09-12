@@ -11,7 +11,9 @@ COPY . /Users/peterlin/Documents/Python/ptt-crawler/
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Define environment variable
-ENV NAME googleAPI
+#ENV NAME googleAPI
+#MONGODB_URI=docker.for.mac.localhost:27017
 
 # Run macshop.py when the contain launches
 CMD ["python3", "macshop.py"]
+
