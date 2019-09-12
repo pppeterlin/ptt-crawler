@@ -189,11 +189,14 @@ def main(u):
 
 
 if __name__ == '__main__':
+
+    # Connect to MongoDB
     conn = MongoClient('host.docker.internal:27017')
     # conn = MongoClient()
     collection = conn.local.macshop
     print(collection.stats)
 
+    # Crawl & Parse PTT
     start_time = time.time()
     site = 'https://www.ptt.cc'
     board = 'bbs/MacShop'
@@ -222,7 +225,7 @@ if __name__ == '__main__':
 
     print(len(data))
 
-    # data = [i for i in data if collection.update({'url': i['url']}, i, upsert = True)['updatedExisting'] == 'True']
+    # Check if Post is New
     data_new = data[:]
     for i in data:            
         exitst = collection.update({'url': i['url']}, i, upsert = True)
